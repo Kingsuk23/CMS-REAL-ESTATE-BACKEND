@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["tracing"]
 }
 
 datasource db {
@@ -17,7 +18,6 @@ model User {
   update_at     DateTime    @updatedAt
   Properties    Properties?
 
-  @@index([email])
 }
 
 // This schema use for property details

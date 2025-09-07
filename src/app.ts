@@ -1,17 +1,16 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
 import { centralizedErrorHandlerMiddlerWare } from './middlewares/centralizedErrorHandler';
-import { BaseError } from './config/baseError';
+import userRoutes from './routes/userRoute';
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.get('/user', (req, res, next) => {
-  const error = new BaseError('BAD REQUEST', 400, 'Missing param', true);
-  next(error);
+app.use('/api/v1', userRoutes);
+app.get('/test', (req, res) => {
+  res.send('Server works!');
 });
-
 // Error handler middler ware
 app.use(centralizedErrorHandlerMiddlerWare);
 
