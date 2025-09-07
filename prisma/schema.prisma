@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// This schema handle user authentications and register
+model User {
+  id            String      @id @default(uuid())
+  name          String
+  email         String      @unique
+  hash_password String
+  created_at    DateTime    @default(now())
+  update_at     DateTime    @updatedAt
+  Properties    Properties?
+
+  @@index([email])
+}
+
+// This schema use for property details
+model Properties {
+  id                    String                 @id @default(uuid())
+  title                 String
+  description           String
+  address               String
+  price                 String
+  property_type         property_type
+  property_sub_type     property_sub_type
+  property_special_type property_special_type?
+  bedrooms              Int
+  bathrooms             Int
+  area                  Int
+  status                status
+  agent                 User                   @relation(fields: [agent_id], references: [id])
+  agent_id              String                 @unique
+  created_at            DateTime               @default(now())
+  updated_at            DateTime               @updatedAt
+  Media                 Media[]
+  Inquiries             Inquiries[]
+}
+
+
+// This schema handle multiple video and image for single property
+model Media {
+  id            String     @id @default(uuid())
+  properties    Properties @relation(fields: [properties_id], references: [id])
+  properties_id String
+  type          media_type
+  url           String
+  create_at     DateTime   @default(now())
+  update_at     DateTime   @updatedAt
+}
+
+// This schema is use for handle multiple quires in single property
+model Inquiries {
+  id            String     @id @default(uuid())
+  properties    Properties @relation(fields: [properties_id], references: [id])
+  properties_id String
+  name          String
+  email         String     @unique
+  message       String
+  created_at    DateTime   @default(now())
+}
+
+enum property_type {
+  residential
+  commercial
+  land
+}
+
+enum property_sub_type {
+  house
+  apartment
+  villa
+  condo
+  townhouse
+  office
+  retail
+  warehouse
+  agricultural
+  residential_plot
+  commercial_plot
+}
+
+enum property_special_type {
+  luxury
+  studio
+  holiday_home
+}
+
+enum status {
+  published
+  draft
+}
+
+enum media_type {
+  video
+  image
+}
