@@ -12,11 +12,11 @@ export const createUserService = async ({
 }: userType): Promise<{ id: string }> => {
   try {
     // Validate all inputs are there or not
-    if (!email || !name || !password) {
+    if (!email?.trim() || !name?.trim() || !password?.trim()) {
       throw new BaseError(
         'BAD REQUEST',
         HttpStatusCode.BadRequest,
-        'Missing required fields',
+        'Missing or invalid required fields',
         true,
       );
     }

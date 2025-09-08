@@ -17,28 +17,28 @@ export const validateUserAuth = (
 ) => {
   try {
     // collect token from header
-    const authToke = req.header('auth-token');
+    const authToken = req.header('auth-token');
 
     // validate token exist or not
-    if (!authToke) {
+    if (!authToken || !authToken.startsWith('Bearer ')) {
       throw new BaseError(
-        'BAD REQUEST',
-        HttpStatusCode.BadRequest,
-        'missing fields',
+        'UNAUTHORIZED',
+        HttpStatusCode.Unauthorized,
+        'Authentication token is required',
         true,
       );
     }
-
+    const token = authToken.split(' ')[1];
     // verify if it's correct or false
     const verify = <jwt.UserIDJwtPayload>(
-      jwt.verify(authToke, process.env.JWT_SECRETE as string)
+      jwt.verify(token, process.env.JWT_SECRETE as string)
     );
 
     if (!verify) {
       throw new BaseError(
-        'BAD REQUEST',
-        HttpStatusCode.BadRequest,
-        'Invalid user input',
+        'UNAUTHORIZED',
+        HttpStatusCode.Unauthorized,
+        'Invalid authentication token',
         true,
       );
     }
@@ -46,6 +46,17 @@ export const validateUserAuth = (
     (req as CustomRequest).user = verify.user;
     next();
   } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      next(
+        new BaseError(
+          'UNAUTHORIZED',
+          HttpStatusCode.Unauthorized,
+          'Token expired',
+          true,
+        ),
+      );
+      return;
+    }
     next(error);
   }
 };
