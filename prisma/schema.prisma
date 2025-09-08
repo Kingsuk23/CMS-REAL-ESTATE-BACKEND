@@ -25,7 +25,7 @@ model Properties {
   title                 String
   description           String
   address               String
-  price                 String
+  price                 Int
   property_type         property_type
   property_sub_type     property_sub_type
   property_special_type property_special_type?

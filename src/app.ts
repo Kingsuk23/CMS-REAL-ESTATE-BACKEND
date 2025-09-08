@@ -16,6 +16,7 @@ process.on('uncaughtException', (error: Error) => {
 import express from 'express';
 import { centralizedErrorHandlerMiddlerWare } from './middlewares/centralizedErrorHandler';
 import userRoutes from './routes/userRoute';
+import propertyRoutes from './routes/propertyRoute';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
 // Api End Pointes
 app.use('/api/v1', userRoutes);
+app.use('/api/v1', propertyRoutes);
 
 // Error handler middler ware
 app.use(centralizedErrorHandlerMiddlerWare);

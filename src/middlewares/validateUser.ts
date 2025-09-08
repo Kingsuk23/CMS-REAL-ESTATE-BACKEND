@@ -33,7 +33,7 @@ export const validateUserAuth = (
     const verify = <jwt.UserIDJwtPayload>(
       jwt.verify(authToke, process.env.JWT_SECRETE as string)
     );
-    console.log(verify);
+
     if (!verify) {
       throw new BaseError(
         'BAD REQUEST',
