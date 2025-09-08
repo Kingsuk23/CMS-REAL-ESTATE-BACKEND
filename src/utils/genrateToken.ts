@@ -3,9 +3,9 @@ import { BaseError } from '../config/baseError';
 import { HttpStatusCode } from '../models/httpStatusCode';
 
 // Generate jwt token
-export const generateToken = (id: string): string => {
+export const generateToken = (payload: object) => {
   try {
-    return jwt.sign({ id }, process.env.JWT_SECRETE as string, {
+    return jwt.sign(payload, process.env.JWT_SECRETE as string, {
       expiresIn: '30d',
     });
   } catch (error) {
