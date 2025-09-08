@@ -3,6 +3,7 @@ import { HttpStatusCode } from '../models/httpStatusCode';
 import { userType } from '../models/userTypes';
 import bcrypt from 'bcrypt';
 import prisma from '../config/database';
+import disposableEmailDetector from 'disposable-email-detector';
 
 export const createUserService = async ({
   email,
@@ -20,6 +21,17 @@ export const createUserService = async ({
       );
     }
 
+    //check this email is temporary or not
+    const is_disposable = await disposableEmailDetector(email);
+
+    if (is_disposable) {
+      throw new BaseError(
+        'BAD REQUEST',
+        HttpStatusCode.BadRequest,
+        'This email not register',
+        true,
+      );
+    }
     //Find user that already exist or not
     const is_user_exist = await prisma.user.findUnique({
       where: { email },

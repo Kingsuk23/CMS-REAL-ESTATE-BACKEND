@@ -19,13 +19,12 @@ import userRoutes from './routes/userRoute';
 
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
+// Api End Pointes
 app.use('/api/v1', userRoutes);
-app.get('/test', (req, res) => {
-  res.send('Server works!');
-});
+
 // Error handler middler ware
 app.use(centralizedErrorHandlerMiddlerWare);
 
