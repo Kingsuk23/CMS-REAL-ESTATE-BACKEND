@@ -9,14 +9,13 @@ datasource db {
 
 // This schema handle user authentications and register
 model User {
-  id            String      @id @default(uuid())
+  id            String       @id @default(uuid())
   name          String
-  email         String      @unique
+  email         String       @unique
   hash_password String
-  created_at    DateTime    @default(now())
-  update_at     DateTime    @updatedAt
-  Properties    Properties?
-
+  created_at    DateTime     @default(now())
+  update_at     DateTime     @updatedAt
+  Properties    Properties[]
 }
 
 // This schema use for property details
@@ -34,13 +33,12 @@ model Properties {
   area                  Int
   status                status
   agent                 User                   @relation(fields: [agent_id], references: [id])
-  agent_id              String                 @unique
+  agent_id              String
   created_at            DateTime               @default(now())
   updated_at            DateTime               @updatedAt
   Media                 Media[]
   Inquiries             Inquiries[]
 }
-
 
 // This schema handle multiple video and image for single property
 model Media {
@@ -62,6 +60,15 @@ model Inquiries {
   email         String     @unique
   message       String
   created_at    DateTime   @default(now())
+}
+
+model JobStatus {
+  id        String     @id @default(uuid())
+  job_id    String
+  file_name String
+  file_path String
+  status    job_status
+  created   DateTime   @default(now())
 }
 
 enum property_type {
@@ -98,4 +105,10 @@ enum status {
 enum media_type {
   video
   image
+}
+
+enum job_status {
+  complete
+  failed
+  pending
 }

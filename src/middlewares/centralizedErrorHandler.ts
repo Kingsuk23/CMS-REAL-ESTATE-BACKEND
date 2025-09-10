@@ -14,8 +14,8 @@ export const centralizedErrorHandlerMiddlerWare = async (
 
   await errorHandle.handleError(err);
 
-  res.status((err as BaseError).httpCode).json({
-    status: err.name,
-    message: err.message,
+  res.status((err as BaseError).httpCode || 500).json({
+    status: (err as BaseError).name || 'Error',
+    message: (err as BaseError).message || 'Internal Server Error',
   });
 };

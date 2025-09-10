@@ -17,7 +17,7 @@ export const validateUserAuth = (
 ) => {
   try {
     // collect token from header
-    const authToken = req.header('auth-token');
+    const authToken = req.header('Authorization');
 
     // validate token exist or not
     if (!authToken || !authToken.startsWith('Bearer ')) {

@@ -6,6 +6,7 @@ import {
   getManyPropertyService,
   getOnePropertyService,
   listPropertyService,
+  propertyMedia,
   publicPropertyService,
   updatePropertyService,
 } from '../services/propertiesService';
@@ -30,7 +31,7 @@ export const listPropertyController = async (
       property_type,
       title,
     } = req.body;
-
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const agent_id = (req as CustomRequest).user.id;
 
     const newPropertyListing = await listPropertyService({
@@ -153,6 +154,25 @@ export const publishPropertyController = async (
     res.status(HttpStatusCode.OK).json({
       message: 'Find All Properties successfully',
       property: publicProperty,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const propertyMediaController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const propertyId = req.params.id;
+    const file = req.files as { [fieldname: string]: Express.Multer.File[] };
+    const propertyMediaResponse = await propertyMedia(propertyId, file);
+    console.log(propertyMediaResponse);
+    res.status(HttpStatusCode.OK).json({
+      message: 'Find All Properties successfully',
+      job_ids: propertyMediaResponse,
     });
   } catch (error) {
     next(error);

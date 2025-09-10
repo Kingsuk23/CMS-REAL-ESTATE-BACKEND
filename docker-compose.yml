@@ -1,0 +1,15 @@
+version: '3.9'
+
+services:
+  clamav:
+    image: clamav/clamav:latest
+    container_name: clamav
+    restart: unless-stopped
+    ports:
+      - '3310:3310'
+    volumes:
+      - clamav_data:/var/lib/clamav
+      - ./scan:/scan
+
+volumes:
+  clamav_data:

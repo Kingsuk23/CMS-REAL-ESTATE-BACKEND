@@ -4,6 +4,8 @@ import prisma from '../config/database';
 import { HttpStatusCode } from '../models/httpStatusCode';
 import { propertyListingType } from '../models/property';
 import { propertyUpdateType } from '../models/property';
+import { verifyFilesLengthAndSize } from '../utils/verifyFilesLengthAndSize';
+import { file_store } from '../utils/queue';
 
 export const listPropertyService = async ({
   address,
@@ -40,8 +42,6 @@ export const listPropertyService = async ({
       );
     }
 
-    const url = 'buvh';
-
     // create new property
     const property_listing = await prisma.properties.create({
       data: {
@@ -57,9 +57,6 @@ export const listPropertyService = async ({
         title,
         status: 'draft',
         property_special_type,
-        Media: {
-          create: { url, type: 'image' },
-        },
       },
       select: {
         id: true,
@@ -377,7 +374,96 @@ export const publicPropertyService = async (
     throw new BaseError(
       'INTERNAL SERVER ERROR',
       HttpStatusCode.InternalServerError,
-      `Failed to update property status: ${(error as Error).message}`,
+      `Failed to publish property: ${(error as Error).message}`,
+      false,
+    );
+  }
+};
+
+export const propertyMedia = async (
+  propertyId: string,
+  files: {
+    [fieldname: string]: Express.Multer.File[];
+  },
+) => {
+  try {
+    verifyFilesLengthAndSize('image', 5, files);
+    verifyFilesLengthAndSize('video', 1, files);
+    const JobIds: string[] = [];
+    for (const file of files['image']) {
+      console.log(file);
+      const imageJob = await file_store.add(
+        'image_scan_store',
+        {
+          file,
+          propertyId,
+        },
+        { attempts: 3, backoff: { type: 'fixed', delay: 1000, jitter: 0.5 } },
+      );
+
+      if (!imageJob.id) {
+        throw new BaseError(
+          'FAILED CREATE JOB',
+          HttpStatusCode.Forbidden,
+          `Failed to create job`,
+          false,
+        );
+      }
+      const CreateJobStatus = await prisma.jobStatus.create({
+        data: {
+          file_name: file.filename,
+          file_path: file.path,
+          job_id: imageJob.id,
+          status: 'pending',
+        },
+        select: {
+          job_id: true,
+        },
+      });
+      JobIds.push(CreateJobStatus.job_id);
+    }
+    for (const file of files['video']) {
+      const videoJob = await file_store.add(
+        'vide_scan_transcode_store',
+        {
+          file,
+          propertyId,
+        },
+        { attempts: 3, backoff: { type: 'fixed', delay: 1000, jitter: 0.5 } },
+      );
+      if (!videoJob.id) {
+        throw new BaseError(
+          'FAILED CREATE JOB',
+          HttpStatusCode.Forbidden,
+          `Failed to create job`,
+          false,
+        );
+      }
+      const CreateJobStatus = await prisma.jobStatus.create({
+        data: {
+          file_name: file.filename,
+          file_path: file.path,
+          job_id: videoJob.id,
+          status: 'pending',
+        },
+        select: {
+          job_id: true,
+        },
+      });
+
+      JobIds.push(CreateJobStatus.job_id);
+    }
+
+    return JobIds;
+  } catch (error) {
+    if (error instanceof BaseError) {
+      throw error;
+    }
+
+    throw new BaseError(
+      'INTERNAL SERVER ERROR',
+      HttpStatusCode.InternalServerError,
+      `Failed to upload media: ${(error as Error).message}`,
       false,
     );
   }
